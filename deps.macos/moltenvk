@@ -23,7 +23,7 @@ moltenvk_patch() {
 moltenvk_build() {
   cd MoltenVK
   ./fetchDependencies --macos
-  xcodebuild build -quiet -project MoltenVKPackaging.xcodeproj -scheme "MoltenVK Package (macOS only)" -configuration ${config} GCC_GENERATE_DEBUGGING_SYMBOLS=TRUE DEBUG_INFORMATION_FORMAT="dwarf-with-dsym"
+  xcodebuild build -quiet -project MoltenVKPackaging.xcodeproj -scheme "MoltenVK Package (macOS only)" -configuration ${config} GCC_GENERATE_DEBUGGING_SYMBOLS=TRUE DEBUG_INFORMATION_FORMAT="dwarf-with-dsym" GCC_PREPROCESSOR_DEFINITIONS='$GCC_PREPROCESSOR_DEFINITIONS MVK_LOG_LEVEL_INFO=0 MVK_LOG_LEVEL_DEBUG=0'
   cd ..
 }
 
