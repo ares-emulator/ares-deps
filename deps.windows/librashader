@@ -1,7 +1,7 @@
 librashader_name='librashader'
-librashader_version='0.5.1'
+librashader_version='0.6.2'
 librashader_url='https://github.com/SnowflakePowered/librashader.git'
-librashader_hash='cbdbdafecdfd6113ef1cdc15e0a4140b46420f0b'
+librashader_hash='5847a40307cb8065023774c247dd7dca524e60f5'
 librashader_profile='release'
 
 librashader_setup() {

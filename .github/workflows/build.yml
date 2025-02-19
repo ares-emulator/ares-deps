@@ -12,14 +12,14 @@ jobs:
         - ares-deps
         platform:
         - name: windows-x64
-          os: windows-latest
+          os: windows-2025
           compiler: clang++
           windres: windres
           shell: 'msys2 {0}'
           msystem: clang64
           install: mingw-w64-clang-x86_64-clang
         - name: windows-arm64
-          os: windows-latest
+          os: windows-2025
           compiler: clang++ --target=aarch64-w64-windows-gnu --sysroot=/clangarm64 -resource-dir=/clangarm64/lib/clang/$(basename "$(clang++ -print-resource-dir)")
           windres: windres --target=aarch64-w64-windows-gnu
           shell: 'msys2 {0}'
