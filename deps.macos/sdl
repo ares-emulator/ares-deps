@@ -1,13 +1,19 @@
-sdl_name='SDL2'
-sdl_version='2.30.8'
+sdl_name='SDL3'
+sdl_version='3.2.4'
 sdl_url='https://github.com/libsdl-org/SDL.git'
-sdl_hash='79ec168f3c1e2fe27335cb8886439f7ef676fb49'
+sdl_hash='b5c3eab6b447111d3c7879bb547b80fb4abd9063'
 SDLARGS=()
 
 ## Build Steps
 sdl_setup() {
   if [ ! -d "SDL" ]; then
-    git clone https://github.com/libsdl-org/SDL.git
+    git clone ${sdl_url}
+  else
+    git -C SDL fetch
+  fi
+  git -C SDL reset --hard "$sdl_hash"
+  if [ ! -d "SDL" ]; then
+    git clone ${sdl_url}
   else
     git -C SDL fetch
   fi
@@ -33,11 +39,11 @@ sdl_patch() {
 sdl_build() {
   SDLARGS=()
   SDLARGS+=("-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64;")
-
+  
   cd SDL
   
   xcodebuild build -project ./Xcode/SDL/SDL.xcodeproj \
-                   -scheme "Shared Library" \
+                   -scheme "SDL3" \
                    archive \
                    -configuration $config \
                    DEBUG_INFORMATION_FORMAT="dwarf-with-dsym" \
@@ -45,16 +51,14 @@ sdl_build() {
                    ARCHS="x86_64 arm64" \
                    ONLY_ACTIVE_ARCH=FALSE \
                    2>&1 | xcbeautify --renderer github-actions
+
   cd ..
 }
 
 sdl_install() {
-  ditto build_temp/SDL/build.xcarchive/Products/@rpath/libSDL2.dylib ares-deps/lib/libSDL2.dylib
-  ditto build_temp/SDL/build.xcarchive/dSYMs/libSDL2.dylib.dSYM ares-deps/lib/libSDL2.dylib.dSYM
-  mkdir -p ares-deps/include/SDL2
-  ditto build_temp/SDL/build.xcarchive/Products/usr/local/include ares-deps/include/SDL2
-  ditto build_temp/SDL/include/SDL_metal.h build_temp/SDL/include/SDL_locale.h build_temp/SDL/include/SDL_misc.h ares-deps/include/SDL2
-  ditto build_temp/SDL/LICENSE.txt ares-deps/licenses/SDL2/LICENSE.txt
+  ditto build_temp/SDL/build.xcarchive/Products/Library/Frameworks/SDL3.framework ares-deps/lib/SDL3.framework
+  ditto build_temp/SDL/build.xcarchive/dSYMs/SDL3.framework.dSYM ares-deps/lib/SDL3.framework.dSYM
+  ditto build_temp/SDL/LICENSE.txt ares-deps/licenses/SDL/LICENSE.txt
 }
 
 
