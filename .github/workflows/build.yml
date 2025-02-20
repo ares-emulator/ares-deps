@@ -80,11 +80,12 @@ jobs:
         envName: ${{ matrix.platform.name }}
       run: |
         ./build_deps.sh RelWithDebInfo
+        tar -cvJf ares-deps.tar.xz ares-deps
     - name: Publish Build Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: ares-deps-${{ matrix.platform.name }}
-        path: ${{ github.workspace }}/ares-deps
+        path: ${{ github.workspace }}/ares-deps.tar.xz
   make-release:
     name: Create and upload release
     permissions:
@@ -105,6 +106,16 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         
+      - name: Decompress build artifacts
+        run: |
+          : Decompress build artifacts
+          ls **/*
+          for package in macos-universal linux-universal windows-x64 windows-arm64; do
+            tar -xJf ares-deps-${package}/ares-deps.tar.xz
+            rm -rf ares-deps-${package}
+            mv ares-deps ares-deps-${package}
+          done
+          
       - name: Package Dependencies
         run: |
           : Package Dependencies
