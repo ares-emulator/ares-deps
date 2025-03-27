@@ -17,6 +17,7 @@ librashader_setup() {
   elif [[ $config == "Release" ]]; then
     librashader_profile='optimized'
   fi
+  export MACOSX_DEPLOYMENT_TARGET=10.15
 }
 
 librashader_clean() {

@@ -18,18 +18,11 @@ sdl_setup() {
     git -C SDL fetch
   fi
   git -C SDL reset --hard "$sdl_hash"
+  export MACOSX_DEPLOYMENT_TARGET=10.15
 }
 
 sdl_clean() {
   echo "Todo"
-}
-
-sdl_config() {
-  if [[ "$config" == "RelWithDebInfo" ]]; then
-    CFLAGS='-g'
-  elif [[ "$config" == "Debug" ]]; then
-    CFLAGS='-O0 -g'
-  fi
 }
 
 sdl_patch() {

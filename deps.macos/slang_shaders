@@ -17,10 +17,6 @@ slang_shaders_clean() {
   echo "Todo"
 }
 
-slang_shaders_config() {
-  echo "No configuration to perform"
-}
-
 slang_shaders_patch() {
   echo "No patching to perform"
 }
