@@ -1,13 +1,13 @@
-sdl_name='SDL2'
-sdl_version='2.30.8'
+sdl_name='SDL3'
+sdl_version='3.2.8'
 sdl_url='https://github.com/libsdl-org/SDL.git'
-sdl_hash='79ec168f3c1e2fe27335cb8886439f7ef676fb49'
+sdl_hash='f6864924f76e1a0b4abaefc76ae2ed22b1a8916e'
 SDLARGS=()
 
 ## Build Steps
 sdl_setup() {
   if [ ! -d "SDL" ]; then
-    git clone https://github.com/libsdl-org/SDL.git
+    git clone ${sdl_url}
   else
     git -C SDL fetch
   fi
@@ -53,16 +53,16 @@ sdl_build() {
 
 sdl_install() {
   mkdir -p ares-deps/lib
-  mkdir -p ares-deps/include/SDL2
-  mkdir -p ares-deps/licenses/SDL2
-  cp -R build_temp/SDL/build/${config}/SDL2.dll ares-deps/lib/SDL2.dll
-  cp -R build_temp/SDL/build/${config}/SDL2.pdb ares-deps/lib/SDL2.pdb
-  cp -R build_temp/SDL/build/${config}/SDL2.exp ares-deps/lib/SDL2.exp
-  cp -R build_temp/SDL/build/${config}/SDL2.lib ares-deps/lib/SDL2.lib
-  mkdir -p ares-deps/include/SDL2
-  cp -R build_temp/SDL/build/include/SDL2/. ares-deps/include/SDL2/
-  cp -R build_temp/SDL/build/include-config-${config}/SDL2/. ares-deps/include/SDL2/
-  cp -R build_temp/SDL/LICENSE.txt ares-deps/licenses/SDL2/LICENSE.txt
+  mkdir -p ares-deps/include/SDL3
+  mkdir -p ares-deps/licenses/SDL3
+  cp -R build_temp/SDL/build/${config}/SDL3.dll ares-deps/lib/SDL3.dll
+  cp -R build_temp/SDL/build/${config}/SDL3.pdb ares-deps/lib/SDL3.pdb
+  cp -R build_temp/SDL/build/${config}/SDL3.exp ares-deps/lib/SDL3.exp
+  cp -R build_temp/SDL/build/${config}/SDL3.lib ares-deps/lib/SDL3.lib
+  mkdir -p ares-deps/include/SDL3
+  cp -R build_temp/SDL/include/SDL3/. ares-deps/include/SDL3/
+  cp -R build_temp/SDL/build/include-config-${config}/build_config/. ares-deps/include/SDL3/
+  cp -R build_temp/SDL/LICENSE.txt ares-deps/licenses/SDL3/LICENSE.txt
 }
 
 

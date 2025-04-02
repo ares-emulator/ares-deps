@@ -1,7 +1,7 @@
 librashader_name='librashader'
-librashader_version='0.5.1'
+librashader_version='0.6.3'
 librashader_url='https://github.com/SnowflakePowered/librashader.git'
-librashader_hash='cbdbdafecdfd6113ef1cdc15e0a4140b46420f0b'
+librashader_hash='029cd36cdf4963e8d9501d912689549254f50f0c'
 librashader_profile='release'
 
 librashader_setup() {
@@ -24,16 +24,21 @@ librashader_clean() {
 }
 
 librashader_patch() {
-  echo "No patching to perform"
+  cd librashader
+  echo "Pinning nightly Rust version to 2025-03-21"
+  echo $'[toolchain]' > rust-toolchain.toml
+  echo $'channel = \"nightly-2025-03-21\"' >> rust-toolchain.toml
+  echo $'targets = [ \"aarch64-pc-windows-msvc\", \"x86_64-pc-windows-msvc\" ]' >> rust-toolchain.toml
+  cd ..
 }
 
 librashader_build() {
   cd librashader
   if [[ $envName = windows-arm64 ]]; then
     echo "Targeting aarch64..."
-    cargo +nightly run -p librashader-build-script -- --profile ${librashader_profile} --target aarch64-pc-windows-msvc
+    cargo run -p librashader-build-script -- --profile ${librashader_profile} --target aarch64-pc-windows-msvc
   else
-    cargo +nightly run -p librashader-build-script -- --profile ${librashader_profile}
+    cargo run -p librashader-build-script -- --profile ${librashader_profile}
   fi
   cd ..
 }
