@@ -1,0 +1,49 @@
+chd_rs_name='chd-rs'
+chd_rs_version='0.3.3'
+chd_rs_url='https://github.com/SnowflakePowered/chd-rs.git'
+chd_rs_hash='1faabae905d0f728e0b558c979151fa05ce4778b'
+chd_rs_profile='release'
+
+## Build Steps
+chd_rs_setup() {
+  if [ ! -d "chd-rs" ]; then
+    git clone https://github.com/SnowflakePowered/chd-rs/
+  else
+    git -C chd-rs fetch
+  fi
+  git -C chd-rs reset --hard "$chd_rs_hash"
+}
+
+chd_rs_clean() {
+  echo "Todo"
+}
+
+chd_rs_patch() {
+  cd chd-rs
+  echo $'strip = \"debuginfo\"' >> Cargo.toml
+  cd ..
+}
+
+chd_rs_build() {
+  cd chd-rs
+  if [[ $envName = windows-arm64 ]]; then
+    cargo build --profile ${chd_rs_profile} --target aarch64-pc-windows-msvc --features=chd_core_file
+  else
+    cargo build --profile ${chd_rs_profile} --features=chd_core_file
+  fi
+  cd ..
+}
+
+chd_rs_install() {
+  mkdir -p ares-deps/include/chd-rs
+  mkdir -p ares-deps/lib/
+  if [[ $envName = windows-arm64 ]]; then
+    local targetName="aarch64-pc-windows-msvc"
+  else
+    local targetName=""
+  fi
+  cp -R build_temp/chd-rs/target/${targetName}/${chd_rs_profile}/chd_capi.d ares-deps/lib/chd_capi.d
+  cp -R build_temp/chd-rs/target/${targetName}/${chd_rs_profile}/chd_capi.lib ares-deps/lib/chd_capi.lib
+}
+
+
