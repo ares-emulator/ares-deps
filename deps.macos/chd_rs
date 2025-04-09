@@ -1,0 +1,40 @@
+chd_rs_name='chd-rs'
+chd_rs_version='0.3.3'
+chd_rs_url='https://github.com/SnowflakePowered/chd-rs.git'
+chd_rs_hash='1faabae905d0f728e0b558c979151fa05ce4778b'
+chd_rs_profile='release'
+
+## Build Steps
+chd_rs_setup() {
+  if [ ! -d "chd-rs" ]; then
+    git clone https://github.com/SnowflakePowered/chd-rs/
+  else
+    git -C chd-rs fetch
+  fi
+  git -C chd-rs reset --hard "$chd_rs_hash"
+  export MACOSX_DEPLOYMENT_TARGET=10.15
+}
+
+chd_rs_clean() {
+  echo "Todo"
+}
+
+chd_rs_patch() {
+  cd chd-rs
+  echo $'strip = \"debuginfo\"' >> Cargo.toml
+  cd ..
+}
+
+chd_rs_build() {
+  cd chd-rs
+  cargo build --profile release --target x86_64-apple-darwin --features=chd_core_file
+  cargo build --profile release --target aarch64-apple-darwin --features=chd_core_file
+  lipo -create -output target/${chd_rs_profile}/libchd_capi.a target/x86_64-apple-darwin/${chd_rs_profile}/libchd_capi.a target/aarch64-apple-darwin/${chd_rs_profile}/libchd_capi.a
+  cd ..
+}
+
+chd_rs_install() {
+  ditto "build_temp"/chd-rs/target/release/libchd_capi.a ares-deps/lib/libchd_capi.a
+}
+
+
