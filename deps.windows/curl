@@ -1,0 +1,66 @@
+curl_name='curl'
+curl_version='8.13.0'
+curl_url='https://github.com/curl/curl.git'
+curl_hash='1c3149881769e7bd79b072e48374e4c2b3678b2f'
+curl_args=()
+
+## Build Steps
+curl_setup() {
+  if [ ! -d "curl" ]; then
+    git clone ${curl_url}
+  else
+    git -C curl fetch
+  fi
+  git -C curl reset --hard "$curl_hash"
+  curl_args=(
+    -DBUILD_CURL_EXE:BOOL=OFF
+    -DBUILD_TESTING:BOOL=OFF
+    -DCURL_USE_LIBPSL=OFF
+    -DCURL_USE_LIBSSH2:BOOL=OFF
+    -DCURL_USE_SCHANNEL:BOOL=ON
+    -DCURL_ZLIB:BOOL=OFF
+  )
+}
+
+curl_clean() {
+  echo "Todo"
+}
+
+curl_patch() {
+  echo "No patching to perform"
+}
+
+curl_build() {
+  if [[ $envName = windows-arm64 ]]; then
+    curl_args+=("-A ARM64")
+  else
+    curl_args+=("-A x64")
+  fi
+
+  cd curl
+  mkdir -p build
+  pushd build
+
+  echo ${config}
+  
+  echo ${curl_args}
+
+  cmake .. "${curl_args[@]}" -G "Visual Studio 17 2022"
+  cmake --build . --config ${config}
+
+  popd
+  cd ..
+}
+
+curl_install() {
+  mkdir -p ares-deps/lib
+  mkdir -p ares-deps/include/curl
+  mkdir -p ares-deps/licenses/curl
+  cp -R build_temp/curl/build/lib/${config}/libcurl.dll ares-deps/lib/libcurl.dll
+  cp -R build_temp/curl/build/lib/${config}/libcurl.pdb ares-deps/lib/libcurl.pdb
+  cp -R build_temp/curl/build/lib/${config}/libcurl_imp.exp ares-deps/lib/libcurl.exp
+  cp -R build_temp/curl/build/lib/${config}/libcurl_imp.lib ares-deps/lib/libcurl.lib
+  mkdir -p ares-deps/include/curl
+  cp -R build_temp/curl/include/curl/. ares-deps/include/curl/
+  cp -R build_temp/curl/LICENSES/. ares-deps/licenses/curl/
+}
