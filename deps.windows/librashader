@@ -1,7 +1,7 @@
 librashader_name='librashader'
-librashader_version='0.6.3'
+librashader_version='0.8.1'
 librashader_url='https://github.com/SnowflakePowered/librashader.git'
-librashader_hash='029cd36cdf4963e8d9501d912689549254f50f0c'
+librashader_hash='75ca917cd705885e887ac840b693b408480b5b88'
 librashader_profile='release'
 
 librashader_setup() {
@@ -25,7 +25,7 @@ librashader_clean() {
 
 librashader_patch() {
   cd librashader
-  echo "Pinning nightly Rust version to 2025-03-21"
+  echo "Pinning nightly Rust version to 2025-05-20"
   echo $'[toolchain]' > rust-toolchain.toml
   echo $'channel = \"nightly-2025-03-21\"' >> rust-toolchain.toml
   echo $'targets = [ \"aarch64-pc-windows-msvc\", \"x86_64-pc-windows-msvc\" ]' >> rust-toolchain.toml
