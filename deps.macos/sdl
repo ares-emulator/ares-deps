@@ -1,7 +1,7 @@
 sdl_name='SDL3'
-sdl_version='3.2.10'
+sdl_version='3.2.14'
 sdl_url='https://github.com/libsdl-org/SDL.git'
-sdl_hash='877399b2b2cf21e67554ed9046410f268ce1d1b2'
+sdl_hash='8d604353a53853fa56d1bdce0363535605ca868f'
 SDLARGS=()
 
 ## Build Steps
