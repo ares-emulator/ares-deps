@@ -39,7 +39,12 @@ librashader_build() {
   cargo run -p librashader-build-script -- --profile ${librashader_profile} --target x86_64-apple-darwin
   cargo run -p librashader-build-script -- --profile ${librashader_profile} --target aarch64-apple-darwin
   lipo -create -output target/${librashader_profile}/librashader.dylib target/x86_64-apple-darwin/${librashader_profile}/librashader.dylib target/aarch64-apple-darwin/${librashader_profile}/librashader.dylib
-  lipo -create -output target/${librashader_profile}/librashader.dylib.dSYM target/x86_64-apple-darwin/${librashader_profile}/deps/liblibrashader_capi.dylib.dSYM/Contents/Resources/DWARF/liblibrashader_capi.dylib target/aarch64-apple-darwin/${librashader_profile}/deps/liblibrashader_capi.dylib.dSYM/Contents/Resources/DWARF/liblibrashader_capi.dylib
+  # Package debug symbols
+  mkdir -p target/${librashader_profile}/librashader.dylib.dSYM
+  mkdir -p target/${librashader_profile}/librashader.dylib.dSYM/Contents/Resources/DWARF
+  ditto target/*-apple-darwin/${librashader_profile}/deps/liblibrashader_capi.dylib.dSYM/Contents/Resources/Relocations target/${librashader_profile}/librashader.dylib.dSYM/Contents/Resources/Relocations
+  ditto target/aarch64-apple-darwin/${librashader_profile}/deps/liblibrashader_capi.dylib.dSYM/Contents/Info.plist target/${librashader_profile}/librashader.dylib.dSYM/Contents/Info.plist
+  lipo -create -output target/${librashader_profile}/librashader.dylib.dSYM/Contents/Resources/DWARF/liblibrashader_capi.dylib target/x86_64-apple-darwin/${librashader_profile}/deps/liblibrashader_capi.dylib.dSYM/Contents/Resources/DWARF/liblibrashader_capi.dylib target/aarch64-apple-darwin/${librashader_profile}/deps/liblibrashader_capi.dylib.dSYM/Contents/Resources/DWARF/liblibrashader_capi.dylib
   cd ..
 }
 
