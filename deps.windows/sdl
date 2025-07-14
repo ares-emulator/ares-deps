@@ -2,7 +2,7 @@ sdl_name='SDL3'
 sdl_version='3.2.14'
 sdl_url='https://github.com/libsdl-org/SDL.git'
 sdl_hash='8d604353a53853fa56d1bdce0363535605ca868f'
-SDLARGS=()
+SDLARGS=("-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded")
 
 ## Build Steps
 sdl_setup() {
@@ -31,7 +31,6 @@ sdl_patch() {
 }
 
 sdl_build() {
-  SDLARGS=()
   if [[ $envName = windows-arm64 ]]; then
     SDLARGS+=("-A ARM64")
   else
