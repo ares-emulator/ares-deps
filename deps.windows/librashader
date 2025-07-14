@@ -34,12 +34,16 @@ librashader_patch() {
 
 librashader_build() {
   cd librashader
+  export RUSTFLAGS='-Ctarget-feature=+crt-static'
+  export CXXFLAGS='-MT'
+  export CFLAGS='-MT'
   if [[ $envName = windows-arm64 ]]; then
     echo "Targeting aarch64..."
-    cargo run -p librashader-build-script -- --profile ${librashader_profile} --target aarch64-pc-windows-msvc
+    cargo run -p librashader-build-script -- --profile ${librashader_profile} --target aarch64-pc-windows-msvc -- --no-default-features --features=runtime-opengl
   else
-    cargo run -p librashader-build-script -- --profile ${librashader_profile}
+    cargo run -p librashader-build-script -- --profile ${librashader_profile} -- --no-default-features --features=runtime-opengl
   fi
+  unset RUSTFLAGS CXXFLAGS CFLAGS
   cd ..
 }
 
