@@ -1,7 +1,7 @@
 moltenvk_name='MoltenVK'
-moltenvk_version='1.3.0'
+moltenvk_version='1.4.0'
 moltenvk_url='https://github.com/KhronosGroup/MoltenVK.git'
-moltenvk_hash='49b97f26ae013b9e5bfb3098ee5dea5e4f58e9e8'
+moltenvk_hash='458870543b9bcf6b0edd6f90aaa776707b310d96'
 
 moltenvk_setup() {
   if [ ! -d "MoltenVK" ]; then
