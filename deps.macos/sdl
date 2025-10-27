@@ -6,12 +6,7 @@ SDLARGS=()
 
 ## Build Steps
 sdl_setup() {
-  if [ ! -d "SDL" ]; then
-    git clone ${sdl_url}
-  else
-    git -C SDL fetch
-  fi
-  git -C SDL reset --hard "$sdl_hash"
+  echo "[SDL3] cloning"
   if [ ! -d "SDL" ]; then
     git clone ${sdl_url}
   else
@@ -19,17 +14,25 @@ sdl_setup() {
   fi
   git -C SDL reset --hard "$sdl_hash"
   export MACOSX_DEPLOYMENT_TARGET=10.15
+  echo "[SDL3] cloning -- success"
+}
+
+sdl_package_source() {
+  echo "[SDL3] packaging source"
+  ditto SDL ../ares-deps-source/src/SDL
+  echo "[SDL3] packaging source -- success"
 }
 
 sdl_clean() {
-  echo "Todo"
+  echo "[SDL3] cleaning up -- skipped"
 }
 
 sdl_patch() {
-  echo "No patching to perform"
+  echo "[SDL3] patching -- skipped"
 }
 
 sdl_build() {
+  echo "[SDL3] building"
   SDLARGS=()
   SDLARGS+=("-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64;")
   
@@ -46,12 +49,15 @@ sdl_build() {
                    2>&1 | xcbeautify --renderer github-actions
 
   cd ..
+  echo "[SDL3] building -- success"
 }
 
 sdl_install() {
+  echo "[SDL3] installing"
   ditto build_temp/SDL/build.xcarchive/Products/Library/Frameworks/SDL3.framework ares-deps/lib/SDL3.framework
   ditto build_temp/SDL/build.xcarchive/dSYMs/SDL3.framework.dSYM ares-deps/lib/SDL3.framework.dSYM
   ditto build_temp/SDL/LICENSE.txt ares-deps/licenses/SDL/LICENSE.txt
+  echo "[SDL3] installing -- success"
 }
 
 

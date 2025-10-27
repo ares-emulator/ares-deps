@@ -81,16 +81,22 @@ jobs:
       run: |
         ./build_deps.sh RelWithDebInfo
         tar -cvJf ares-deps.tar.xz ares-deps
-    - name: Publish Build Artifacts
+        tar -cvJf ares-deps-source.tar.xz ares-deps-source
+    - name: Upload Libraries
       uses: actions/upload-artifact@v4
       with:
         name: ares-deps-${{ matrix.platform.name }}
         path: ${{ github.workspace }}/ares-deps.tar.xz
+    - name: Upload Source Code
+      uses: actions/upload-artifact@v4
+      with:
+        name: ares-deps-${{ matrix.platform.name }}-source
+        path: ${{ github.workspace }}/ares-deps-source.tar.xz
   make-release:
     name: Create and upload release
     permissions:
       contents: write
-    runs-on: ubuntu-22.04
+    runs-on: macos-latest
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
     needs: [build]
     defaults:
@@ -114,6 +120,10 @@ jobs:
             tar -xJf ares-deps-${package}/ares-deps.tar.xz
             rm -rf ares-deps-${package}
             mv ares-deps ares-deps-${package}
+            
+            tar -xJf ares-deps-${package}-source/ares-deps-source.tar.xz
+            rm -rf ares-deps-${package}-source
+            mv ares-deps-source ares-deps-${package}-source
           done
           
       - name: Package Dependencies

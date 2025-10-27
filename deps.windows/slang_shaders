@@ -5,38 +5,44 @@ slang_shaders_hash='c9303dcc4d11fe5d37db9ef9a24c8eab4087c0c3'
 
 ## Build Steps
 slang_shaders_setup() {
+  echo "[slang_shaders] cloning"
   if [ ! -d "slang-shaders" ]; then
     git clone https://github.com/libretro/slang-shaders.git
   else
     git -C slang-shaders fetch
   fi
   git -C slang-shaders reset --hard "$slang_shaders_hash"
+  echo "[slang_shaders] cloning -- success"
+}
+
+slang_shaders_package_source() {
+  echo "[slang_shaders] packaging source -- skipped"
 }
 
 slang_shaders_clean() {
-  echo "Todo"
-}
-
-slang_shaders_config() {
-  echo "No configuration to perform"
+  echo "[slang_shaders] cleaning up -- skipped"
 }
 
 slang_shaders_patch() {
-  echo "No patching to perform"
+  echo "[slang_shaders] patching -- skipped"
 }
 
 slang_shaders_build() {
+  echo "[slang_shaders] building"
   cd slang-shaders
   rm -rf .git
   rm -f .gitlab-ci.yml
   rm -f configure
   rm -f Makefile
   cd ..
+  echo "[slang_shaders] building -- skipped"
 }
 
 slang_shaders_install() {
+  echo "[slang_shaders] installing"
   mkdir -p ares-deps/share/libretro/shaders/shaders_slang
   cp -R build_temp/slang-shaders/. ares-deps/share/libretro/shaders/shaders_slang/
+  echo "[slang_shaders] installing -- skipped"
 }
 
 

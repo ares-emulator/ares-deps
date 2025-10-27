@@ -5,6 +5,7 @@ librashader_hash='75ca917cd705885e887ac840b693b408480b5b88'
 librashader_profile='release'
 
 librashader_setup() {
+  echo "[librashader] cloning"
   if [ ! -d "librashader" ]; then
     git clone https://github.com/SnowflakePowered/librashader.git
   else
@@ -18,22 +19,32 @@ librashader_setup() {
     librashader_profile='optimized'
   fi
   export MACOSX_DEPLOYMENT_TARGET=10.15
+  echo "[librashader] cloning -- success"
+}
+
+librashader_package_source() {
+  echo "[librashader] packaging source"
+  ditto librashader ../ares-deps-source/src/librashader
+  echo "[librashader] packaging source -- success"
 }
 
 librashader_clean() {
-  echo "Todo"
+  echo "[librashader] cleaning up -- skipped"
 }
 
 librashader_patch() {
+  echo "[librashader] patching source"
   cd librashader
   echo "Pinning nightly Rust version to 2025-05-20"
   echo $'[toolchain]' > rust-toolchain.toml
   echo $'channel = \"nightly-2025-03-21\"' >> rust-toolchain.toml
   echo $'targets = [ \"x86_64-apple-darwin\", \"aarch64-apple-darwin\" ]' >> rust-toolchain.toml
   cd ..
+  echo "[librashader] patching source -- success"
 }
 
 librashader_build() {
+  echo "[librashader] building"
   cd librashader
   export RUSTFLAGS=-g
   cargo run -p librashader-build-script -- --profile ${librashader_profile} --target x86_64-apple-darwin
@@ -46,14 +57,16 @@ librashader_build() {
   ditto target/aarch64-apple-darwin/${librashader_profile}/deps/liblibrashader_capi.dylib.dSYM/Contents/Info.plist target/${librashader_profile}/librashader.dylib.dSYM/Contents/Info.plist
   lipo -create -output target/${librashader_profile}/librashader.dylib.dSYM/Contents/Resources/DWARF/liblibrashader_capi.dylib target/x86_64-apple-darwin/${librashader_profile}/deps/liblibrashader_capi.dylib.dSYM/Contents/Resources/DWARF/liblibrashader_capi.dylib target/aarch64-apple-darwin/${librashader_profile}/deps/liblibrashader_capi.dylib.dSYM/Contents/Resources/DWARF/liblibrashader_capi.dylib
   cd ..
+  echo "[librashader] building -- success"
 }
 
 librashader_install() {
-  pwd
+  echo "[librashader] installing"
   ditto build_temp/librashader/include ares-deps/include/librashader/
   ditto build_temp/librashader/target/${librashader_profile}/librashader.dylib ares-deps/lib/librashader.dylib
   ditto build_temp/librashader/target/${librashader_profile}/librashader.dylib.dSYM ares-deps/lib/librashader.dylib.dSYM
   fix_rpaths ares-deps/lib/librashader.dylib
   ditto build_temp/librashader/LICENSE.md ares-deps/licenses/librashader/LICENSE.md
   ditto build_temp/librashader/LICENSE-GPL.md ares-deps/licenses/librashader/LICENSE-GPL.md
+  echo "[librashader] installing -- success"
 }
