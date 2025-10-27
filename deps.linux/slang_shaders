@@ -13,16 +13,16 @@ slang_shaders_setup() {
   git -C slang-shaders reset --hard "$slang_shaders_hash"
 }
 
-slang_shaders_clean() {
-  echo "Todo"
+slang_shaders_package_source() {
+  echo "[slang_shaders] packaging source -- skipped"
 }
 
-slang_shaders_config() {
-  echo "No configuration to perform"
+slang_shaders_clean() {
+  echo "[slang_shaders] cleaning up -- skipped"
 }
 
 slang_shaders_patch() {
-  echo "No patching to perform"
+  echo "[slang_shaders] patching -- skipped"
 }
 
 slang_shaders_build() {

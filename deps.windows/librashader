@@ -5,6 +5,7 @@ librashader_hash='75ca917cd705885e887ac840b693b408480b5b88'
 librashader_profile='release'
 
 librashader_setup() {
+  echo "[librashader] cloning"
   if [ ! -d "librashader" ]; then
     git clone https://github.com/SnowflakePowered/librashader.git
   else
@@ -17,22 +18,33 @@ librashader_setup() {
   elif [[ $config == "Release" ]]; then
     librashader_profile='optimized'
   fi
+  echo "[librashader] cloning -- success"
+}
+
+librashader_package_source() {
+  echo "[librashader] packaging source"
+  mkdir -p ../ares-deps-source/src/librashader
+  cp -R librashader/. ../ares-deps-source/src/librashader
+  echo "[librashader] packaging source -- success"
 }
 
 librashader_clean() {
-  echo "Todo"
+  echo "[librashader] cleaning up -- skipped"
 }
 
 librashader_patch() {
+  echo "[librashader] patching source"
   cd librashader
   echo "Pinning nightly Rust version to 2025-05-20"
   echo $'[toolchain]' > rust-toolchain.toml
   echo $'channel = \"nightly-2025-03-21\"' >> rust-toolchain.toml
   echo $'targets = [ \"aarch64-pc-windows-msvc\", \"x86_64-pc-windows-msvc\" ]' >> rust-toolchain.toml
   cd ..
+  echo "[librashader] patching source -- success"
 }
 
 librashader_build() {
+  echo "[librashader] building"
   cd librashader
   export RUSTFLAGS='-Ctarget-feature=+crt-static'
   export CXXFLAGS='-MT'
@@ -45,9 +57,11 @@ librashader_build() {
   fi
   unset RUSTFLAGS CXXFLAGS CFLAGS
   cd ..
+  echo "[librashader] building -- success"
 }
 
 librashader_install() {
+  echo "[librashader] installing"
   mkdir -p ares-deps/include/librashader/
   mkdir -p ares-deps/lib/
   cp -R build_temp/librashader/include/. ares-deps/include/librashader/
@@ -62,4 +76,5 @@ librashader_install() {
   cp -R build_temp/librashader/target/${targetName}/${librashader_profile}/librashader.dll.lib ares-deps/lib/librashader.dll.lib
   mv ares-deps/lib/librashader.dll.lib ares-deps/lib/librashader.lib
   cp -R build_temp/librashader/target/${targetName}/${librashader_profile}/librashader.pdb ares-deps/lib/librashader.pdb
+  echo "[librashader] installing -- success"
 }

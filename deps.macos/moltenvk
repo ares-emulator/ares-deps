@@ -4,6 +4,7 @@ moltenvk_url='https://github.com/KhronosGroup/MoltenVK.git'
 moltenvk_hash='458870543b9bcf6b0edd6f90aaa776707b310d96'
 
 moltenvk_setup() {
+  echo "[MoltenVK] cloning"
   if [ ! -d "MoltenVK" ]; then
     git clone https://github.com/KhronosGroup/MoltenVK.git
   else
@@ -11,25 +12,36 @@ moltenvk_setup() {
   fi
   git -C MoltenVK reset --hard "$moltenvk_hash"
   export MACOSX_DEPLOYMENT_TARGET=10.15
+  echo "[MoltenVK] cloning -- success"
+}
+
+moltenvk_package_source() {
+  echo "[MoltenVK] packaging source"
+  ditto MoltenVK/ ../ares-deps-source/src/MoltenVK
+  echo "[MoltenVK] packaging source -- success"
 }
 
 moltenvk_clean() {
-  echo "Todo"
+  echo "[MoltenVK] cleaning up -- skipped"
 }
 
 moltenvk_patch() {
-  echo "No patching to perform"
+  echo "[MoltenVK] patching source -- skipped"
 }
 
 moltenvk_build() {
+  echo "[MoltenVK] building"
   cd MoltenVK
   ./fetchDependencies --macos
   xcodebuild build -quiet -project MoltenVKPackaging.xcodeproj -scheme "MoltenVK Package (macOS only)" -configuration ${config} GCC_GENERATE_DEBUGGING_SYMBOLS=TRUE DEBUG_INFORMATION_FORMAT="dwarf-with-dsym" GCC_PREPROCESSOR_DEFINITIONS='$GCC_PREPROCESSOR_DEFINITIONS MVK_LOG_LEVEL_INFO=0 MVK_LOG_LEVEL_DEBUG=0'
   cd ..
+  echo "[MoltenVK] building -- success"
 }
 
 moltenvk_install() {
+  echo "[MoltenVK] installing"
   ditto build_temp/MoltenVK/Package/Release/MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib ares-deps/lib/libMoltenVK.dylib
   ditto build_temp/MoltenVK/Package/Release/MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib.dSYM ares-deps/lib/libMoltenVK.dylib.dSYM
   ditto build_temp/MoltenVK/LICENSE ares-deps/licenses/MoltenVK/LICENSE
+  echo "[MoltenVK] installing -- success"
 }
