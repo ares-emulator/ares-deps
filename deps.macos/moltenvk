@@ -1,7 +1,7 @@
 moltenvk_name='MoltenVK'
-moltenvk_version='1.4.0'
+moltenvk_version='1.4.1'
 moltenvk_url='https://github.com/KhronosGroup/MoltenVK.git'
-moltenvk_hash='458870543b9bcf6b0edd6f90aaa776707b310d96'
+moltenvk_hash='db445ff2042d9ce348c439ad8451112f354b8d2a'
 
 moltenvk_setup() {
   echo "[MoltenVK] cloning"
