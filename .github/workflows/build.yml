@@ -1,8 +1,7 @@
 name: Build
 on:
   push:
-  schedule:
-    - cron: 20 0 * * *
+  workflow_dispatch:
 jobs:
   build:
     strategy:
@@ -29,8 +28,12 @@ jobs:
           os: macos-latest
           compiler: clang++
           shell: sh
-        - name: linux-universal
+        - name: linux-x64
           os: ubuntu-latest
+          compiler: clang++
+          shell: sh
+        - name: linux-arm64
+          os: ubuntu-24.04-arm
           compiler: clang++
           shell: sh
     name: ${{ matrix.program }}-${{ matrix.platform.name }}
@@ -50,23 +53,30 @@ jobs:
     - name: Install Windows Dependencies
       if: runner.os == 'Windows'
       run: |
-        export PATH="/c/Users/runneradmin/.cargo/bin:$PATH" # correct on windows-latest as of 2024-02-19
+        export PATH="/c/Users/runneradmin/.cargo/bin:$PATH"
+        rustup toolchain install stable
+        rustup default stable
         if [[ ${{ matrix.platform.name }} == *-arm64 ]]; then
-          rustup toolchain install nightly
-          rustup default nightly
           rustup target add aarch64-pc-windows-msvc
-        else
-          rustup toolchain install nightly
-          rustup default nightly
         fi
     - name: Install macOS Dependencies
       if: runner.os == 'macOS'
       run: |
-        brew install ninja cmake xcbeautify
-        rustup toolchain install nightly
-        rustup default nightly
+        rustup toolchain install stable
+        rustup default stable
         rustup target add x86_64-apple-darwin
         rustup target add aarch64-apple-darwin
+    - name: Install Linux Dependencies
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential pkg-config cmake git \
+          libasound2-dev libpulse-dev libudev-dev \
+          libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev libxss-dev \
+          libwayland-dev libxkbcommon-dev libegl-dev libdrm-dev libgbm-dev \
+          libvulkan-dev
+        rustup toolchain install stable
+        rustup default stable
     - name: Set up MSVC environment
       if: matrix.platform.msvc-arch != ''
       uses: ilammy/msvc-dev-cmd@v1
@@ -103,6 +113,9 @@ jobs:
       run:
         shell: bash
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Get Metadata
         id: metadata
         run: |
@@ -111,26 +124,26 @@ jobs:
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
-        
+
       - name: Decompress build artifacts
         run: |
           : Decompress build artifacts
           ls **/*
-          for package in macos-universal linux-universal windows-x64 windows-arm64; do
+          for package in macos-universal linux-x64 linux-arm64 windows-x64 windows-arm64; do
             tar -xJf ares-deps-${package}/ares-deps.tar.xz
             rm -rf ares-deps-${package}
             mv ares-deps ares-deps-${package}
-            
+
             tar -xJf ares-deps-${package}-source/ares-deps-source.tar.xz
             rm -rf ares-deps-${package}-source
             mv ares-deps-source ares-deps-${package}-source
           done
-          
+
       - name: Package Dependencies
         run: |
           : Package Dependencies
           shopt -s extglob
-          
+
           for dir in */; do
               dir_name="${dir%/}"
               tar -cvJf "${dir_name}.tar.xz" "$dir"
@@ -147,8 +160,48 @@ jobs:
           for file in ${{ github.workspace }}/@(*.tar.xz|*.zip); do
             echo "    ${file##*/}: $(sha256sum "${file}" | cut -d " " -f 1)" >> ${{ github.workspace }}/CHECKSUMS.txt
           done
-          ls
-          ls ${{ github.workspace }}/*
+
+      - name: Generate deps.json
+        run: |
+          : Generate deps.json
+          SDL_VERSION=$(grep "^sdl_version=" deps.linux/sdl | cut -d"'" -f2)
+          SDL_URL=$(grep "^sdl_url=" deps.linux/sdl | cut -d"'" -f2 | sed 's/\.git$//')
+          LIBRASHADER_VERSION=$(grep "^librashader_version=" deps.linux/librashader | cut -d"'" -f2)
+          LIBRASHADER_URL=$(grep "^librashader_url=" deps.linux/librashader | cut -d"'" -f2 | sed 's/\.git$//')
+          SLANG_SHADERS_VERSION=$(grep "^slang_shaders_version=" deps.linux/slang_shaders | cut -d"'" -f2)
+          SLANG_SHADERS_HASH=$(grep "^slang_shaders_hash=" deps.linux/slang_shaders | cut -d"'" -f2)
+          SLANG_SHADERS_URL=$(grep "^slang_shaders_url=" deps.linux/slang_shaders | cut -d"'" -f2 | sed 's/\.git$//')
+          MOLTENVK_VERSION=$(grep "^moltenvk_version=" deps.macos/moltenvk | cut -d"'" -f2)
+          MOLTENVK_URL=$(grep "^moltenvk_url=" deps.macos/moltenvk | cut -d"'" -f2 | sed 's/\.git$//')
+
+          HASH_LINUX_X64=$(sha256sum ${{ github.workspace }}/ares-deps-linux-x64.tar.xz | cut -d" " -f1)
+          HASH_LINUX_ARM64=$(sha256sum ${{ github.workspace }}/ares-deps-linux-arm64.tar.xz | cut -d" " -f1)
+          HASH_MACOS=$(sha256sum ${{ github.workspace }}/ares-deps-macos-universal.tar.xz | cut -d" " -f1)
+          HASH_WINDOWS_X64=$(sha256sum ${{ github.workspace }}/ares-deps-windows-x64.tar.xz | cut -d" " -f1)
+          HASH_WINDOWS_ARM64=$(sha256sum ${{ github.workspace }}/ares-deps-windows-arm64.tar.xz | cut -d" " -f1)
+
+          cat > ${{ github.workspace }}/deps.json <<EOF
+          {
+            "version": "${{ steps.metadata.outputs.version }}",
+            "baseUrl": "https://github.com/${{ github.repository }}/releases/download",
+            "dependencies": {
+              "sdl": { "version": "${SDL_VERSION}", "tag": "release-${SDL_VERSION}", "url": "${SDL_URL}" },
+              "librashader": { "version": "${LIBRASHADER_VERSION}", "tag": "librashader-v${LIBRASHADER_VERSION}", "url": "${LIBRASHADER_URL}" },
+              "slang-shaders": { "version": "${SLANG_SHADERS_VERSION}", "commit": "${SLANG_SHADERS_HASH}", "url": "${SLANG_SHADERS_URL}" },
+              "moltenvk": { "version": "${MOLTENVK_VERSION}", "tag": "v${MOLTENVK_VERSION}", "url": "${MOLTENVK_URL}" }
+            },
+            "hashes": {
+              "linux-x64": "${HASH_LINUX_X64}",
+              "linux-arm64": "${HASH_LINUX_ARM64}",
+              "macos-universal": "${HASH_MACOS}",
+              "windows-x64": "${HASH_WINDOWS_X64}",
+              "windows-arm64": "${HASH_WINDOWS_ARM64}"
+            }
+          }
+          EOF
+
+          echo "Generated deps.json:"
+          cat ${{ github.workspace }}/deps.json
 
       - name: Create Release
         id: create_release
@@ -160,8 +213,10 @@ jobs:
           name: ares dependencies, build ${{ steps.metadata.outputs.version }}
           body_path: ${{ github.workspace }}/CHECKSUMS.txt
           files: |
+            ${{ github.workspace }}/deps.json
             ${{ github.workspace }}/ares-deps-windows-x64*.*
             ${{ github.workspace }}/ares-deps-windows-arm64*.*
             ${{ github.workspace }}/ares-deps-macos-universal*.*
-            ${{ github.workspace }}/ares-deps-linux-universal*.*
-       
+            ${{ github.workspace }}/ares-deps-linux-x64*.*
+            ${{ github.workspace }}/ares-deps-linux-arm64*.*
+

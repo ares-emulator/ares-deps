@@ -1,30 +1,16 @@
 sdl_name='SDL3'
 sdl_version='3.4.0'
-sdl_url='https://github.com/libsdl-org/SDL.git'
-sdl_hash='a962f40bbba175e9716557a25d5d7965f134a3d3'
-SDLARGS=("-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded")
 
-## Build Steps
 sdl_setup() {
-  echo "[SDL3] cloning"
-  if [ ! -d "SDL" ]; then
-    git clone ${sdl_url}
-  else
-    git -C SDL fetch
-  fi
-  git -C SDL reset --hard "$sdl_hash"
-  echo "[SDL3] cloning -- success"
+  echo "[SDL3] downloading pre-built package"
+  curl -sL -o SDL3-devel.zip "https://github.com/libsdl-org/SDL/releases/download/release-${sdl_version}/SDL3-devel-${sdl_version}-VC.zip"
+  unzip -q SDL3-devel.zip
+  mv SDL3-${sdl_version} SDL
+  echo "[SDL3] downloading -- success"
 }
 
 sdl_package_source() {
-  echo "[SDL3] packaging source"
-  mkdir -p ../ares-deps-source/src/SDL/
-  cp -R SDL/. ../ares-deps-source/src/SDL
-  echo "[SDL3] packaging source -- success"
-}
-
-sdl_clean() {
-  echo "[SDL3] cleaning up -- skipped"
+  echo "[SDL3] packaging source -- skipped (pre-built)"
 }
 
 sdl_patch() {
@@ -32,25 +18,7 @@ sdl_patch() {
 }
 
 sdl_build() {
-  echo "[SDL3] building"
-  if [[ $envName = windows-arm64 ]]; then
-    SDLARGS+=("-A ARM64")
-  else
-    SDLARGS+=("-A x64")
-  fi
-
-  cd SDL
-  mkdir -p build
-  pushd build
-
-  echo ${config}
-
-  cmake .. "${SDLARGS[@]}" -G "Visual Studio 17 2022"
-  cmake --build . --config ${config}
-
-  popd
-  cd ..
-  echo "[SDL3] building -- success"
+  echo "[SDL3] building -- skipped (pre-built)"
 }
 
 sdl_install() {
@@ -58,16 +26,18 @@ sdl_install() {
   mkdir -p ares-deps/lib
   mkdir -p ares-deps/include/SDL3
   mkdir -p ares-deps/licenses/SDL3
-  cp -R build_temp/SDL/build/${config}/SDL3.dll ares-deps/lib/SDL3.dll
-  cp -R build_temp/SDL/build/${config}/SDL3.pdb ares-deps/lib/SDL3.pdb
-  cp -R build_temp/SDL/build/${config}/SDL3.exp ares-deps/lib/SDL3.exp
-  cp -R build_temp/SDL/build/${config}/SDL3.lib ares-deps/lib/SDL3.lib
-  mkdir -p ares-deps/include/SDL3
+
+  if [[ $envName = windows-arm64 ]]; then
+    local arch="arm64"
+  else
+    local arch="x64"
+  fi
+
+  cp build_temp/SDL/lib/${arch}/SDL3.dll ares-deps/lib/SDL3.dll
+  cp build_temp/SDL/lib/${arch}/SDL3.lib ares-deps/lib/SDL3.lib
+  cp build_temp/SDL/lib/${arch}/SDL3.pdb ares-deps/lib/SDL3.pdb
   cp -R build_temp/SDL/include/SDL3/. ares-deps/include/SDL3/
-  cp -R build_temp/SDL/build/include-config-${config}/build_config/. ares-deps/include/SDL3/
-  cp -R build_temp/SDL/LICENSE.txt ares-deps/licenses/SDL3/LICENSE.txt
+  cp build_temp/SDL/LICENSE.txt ares-deps/licenses/SDL3/LICENSE.txt
+
   echo "[SDL3] installing -- success"
 }
-
-
-

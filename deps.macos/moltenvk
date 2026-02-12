@@ -1,47 +1,32 @@
 moltenvk_name='MoltenVK'
 moltenvk_version='1.4.1'
 moltenvk_url='https://github.com/KhronosGroup/MoltenVK.git'
-moltenvk_hash='db445ff2042d9ce348c439ad8451112f354b8d2a'
 
 moltenvk_setup() {
-  echo "[MoltenVK] cloning"
-  if [ ! -d "MoltenVK" ]; then
-    git clone https://github.com/KhronosGroup/MoltenVK.git
-  else
-    git -C MoltenVK fetch
-  fi
-  git -C MoltenVK reset --hard "$moltenvk_hash"
-  export MACOSX_DEPLOYMENT_TARGET=10.15
-  echo "[MoltenVK] cloning -- success"
+  echo "[MoltenVK] downloading pre-built package"
+  curl -sL -o MoltenVK-macos.tar "${moltenvk_url%.git}/releases/download/v${moltenvk_version}/MoltenVK-macos.tar"
+  tar xf MoltenVK-macos.tar
+  rm MoltenVK-macos.tar
+  echo "[MoltenVK] downloading -- success"
 }
 
 moltenvk_package_source() {
-  echo "[MoltenVK] packaging source"
-  ditto MoltenVK/ ../ares-deps-source/src/MoltenVK
-  echo "[MoltenVK] packaging source -- success"
-}
-
-moltenvk_clean() {
-  echo "[MoltenVK] cleaning up -- skipped"
+  echo "[MoltenVK] packaging source -- skipped (pre-built)"
 }
 
 moltenvk_patch() {
-  echo "[MoltenVK] patching source -- skipped"
+  echo "[MoltenVK] patching -- skipped"
 }
 
 moltenvk_build() {
-  echo "[MoltenVK] building"
-  cd MoltenVK
-  ./fetchDependencies --macos
-  xcodebuild build -quiet -project MoltenVKPackaging.xcodeproj -scheme "MoltenVK Package (macOS only)" -configuration ${config} GCC_GENERATE_DEBUGGING_SYMBOLS=TRUE DEBUG_INFORMATION_FORMAT="dwarf-with-dsym" GCC_PREPROCESSOR_DEFINITIONS='$GCC_PREPROCESSOR_DEFINITIONS MVK_LOG_LEVEL_INFO=0 MVK_LOG_LEVEL_DEBUG=0'
-  cd ..
-  echo "[MoltenVK] building -- success"
+  echo "[MoltenVK] building -- skipped (pre-built)"
 }
 
 moltenvk_install() {
   echo "[MoltenVK] installing"
-  ditto build_temp/MoltenVK/Package/Release/MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib ares-deps/lib/libMoltenVK.dylib
-  ditto build_temp/MoltenVK/Package/Release/MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib.dSYM ares-deps/lib/libMoltenVK.dylib.dSYM
+  mkdir -p ares-deps/lib
+  mkdir -p ares-deps/licenses/MoltenVK
+  ditto build_temp/MoltenVK/MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib ares-deps/lib/libMoltenVK.dylib
   ditto build_temp/MoltenVK/LICENSE ares-deps/licenses/MoltenVK/LICENSE
   echo "[MoltenVK] installing -- success"
 }

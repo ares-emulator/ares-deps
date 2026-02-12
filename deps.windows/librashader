@@ -1,23 +1,10 @@
 librashader_name='librashader'
 librashader_version='0.9.1'
 librashader_url='https://github.com/SnowflakePowered/librashader.git'
-librashader_hash='ad661b661c3d10cb4a2573a78a41857330d499ca'
-librashader_profile='release'
 
 librashader_setup() {
   echo "[librashader] cloning"
-  if [ ! -d "librashader" ]; then
-    git clone https://github.com/SnowflakePowered/librashader.git
-  else
-    git -C librashader fetch
-  fi
-  git -C librashader reset --hard "$librashader_hash"
-  
-  if [[ $config == "Debug" ]]; then
-    librashader_profile='debug'
-  elif [[ $config == "Release" ]]; then
-    librashader_profile='optimized'
-  fi
+  git clone --branch librashader-v${librashader_version} --depth 1 ${librashader_url}
   echo "[librashader] cloning -- success"
 }
 
@@ -28,19 +15,8 @@ librashader_package_source() {
   echo "[librashader] packaging source -- success"
 }
 
-librashader_clean() {
-  echo "[librashader] cleaning up -- skipped"
-}
-
 librashader_patch() {
-  echo "[librashader] patching source"
-  cd librashader
-  echo "Pinning nightly Rust version to 2025-05-20"
-  echo $'[toolchain]' > rust-toolchain.toml
-  echo $'channel = \"nightly-2025-03-21\"' >> rust-toolchain.toml
-  echo $'targets = [ \"aarch64-pc-windows-msvc\", \"x86_64-pc-windows-msvc\" ]' >> rust-toolchain.toml
-  cd ..
-  echo "[librashader] patching source -- success"
+  echo "[librashader] patching -- skipped"
 }
 
 librashader_build() {
@@ -51,9 +27,9 @@ librashader_build() {
   export CFLAGS='-MT'
   if [[ $envName = windows-arm64 ]]; then
     echo "Targeting aarch64..."
-    cargo run -p librashader-build-script -- --profile ${librashader_profile} --target aarch64-pc-windows-msvc -- --no-default-features --features=runtime-opengl
+    cargo build --release -p librashader-capi --target aarch64-pc-windows-msvc --no-default-features --features=runtime-opengl,stable
   else
-    cargo run -p librashader-build-script -- --profile ${librashader_profile} -- --no-default-features --features=runtime-opengl
+    cargo build --release -p librashader-capi --no-default-features --features=runtime-opengl,stable
   fi
   unset RUSTFLAGS CXXFLAGS CFLAGS
   cd ..
@@ -65,16 +41,16 @@ librashader_install() {
   mkdir -p ares-deps/include/librashader/
   mkdir -p ares-deps/lib/
   cp -R build_temp/librashader/include/. ares-deps/include/librashader/
+
   if [[ $envName = windows-arm64 ]]; then
-    local targetName="aarch64-pc-windows-msvc"
+    local targetDir="build_temp/librashader/target/aarch64-pc-windows-msvc/release"
   else
-    local targetName=""
+    local targetDir="build_temp/librashader/target/release"
   fi
-  cp -R build_temp/librashader/target/${targetName}/${librashader_profile}/librashader.d ares-deps/lib/librashader.d
-  cp -R build_temp/librashader/target/${targetName}/${librashader_profile}/librashader.dll ares-deps/lib/librashader.dll
-  cp -R build_temp/librashader/target/${targetName}/${librashader_profile}/librashader.dll.exp ares-deps/lib/librashader.dll.exp
-  cp -R build_temp/librashader/target/${targetName}/${librashader_profile}/librashader.dll.lib ares-deps/lib/librashader.dll.lib
-  mv ares-deps/lib/librashader.dll.lib ares-deps/lib/librashader.lib
-  cp -R build_temp/librashader/target/${targetName}/${librashader_profile}/librashader.pdb ares-deps/lib/librashader.pdb
+
+  cp ${targetDir}/librashader_capi.dll ares-deps/lib/librashader.dll
+  cp ${targetDir}/librashader_capi.dll.lib ares-deps/lib/librashader.lib
+  cp ${targetDir}/librashader_capi.pdb ares-deps/lib/librashader.pdb
+
   echo "[librashader] installing -- success"
 }

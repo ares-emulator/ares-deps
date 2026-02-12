@@ -1,23 +1,10 @@
 librashader_name='librashader'
 librashader_version='0.9.1'
 librashader_url='https://github.com/SnowflakePowered/librashader.git'
-librashader_hash='ad661b661c3d10cb4a2573a78a41857330d499ca'
-librashader_profile='release'
 
 librashader_setup() {
   echo "[librashader] cloning"
-  if [ ! -d "librashader" ]; then
-    git clone https://github.com/SnowflakePowered/librashader.git
-  else
-    git -C librashader fetch
-  fi
-  git -C librashader reset --hard "$librashader_hash"
-  
-  if [[ $config == "Debug" ]]; then
-    librashader_profile='debug'
-  elif [[ $config == "Release" ]]; then
-    librashader_profile='optimized'
-  fi
+  git clone --branch librashader-v${librashader_version} --depth 1 ${librashader_url}
   export MACOSX_DEPLOYMENT_TARGET=10.15
   echo "[librashader] cloning -- success"
 }
@@ -28,34 +15,18 @@ librashader_package_source() {
   echo "[librashader] packaging source -- success"
 }
 
-librashader_clean() {
-  echo "[librashader] cleaning up -- skipped"
-}
-
 librashader_patch() {
-  echo "[librashader] patching source"
-  cd librashader
-  echo "Pinning nightly Rust version to 2025-05-20"
-  echo $'[toolchain]' > rust-toolchain.toml
-  echo $'channel = \"nightly-2025-03-21\"' >> rust-toolchain.toml
-  echo $'targets = [ \"x86_64-apple-darwin\", \"aarch64-apple-darwin\" ]' >> rust-toolchain.toml
-  cd ..
-  echo "[librashader] patching source -- success"
+  echo "[librashader] patching -- skipped"
 }
 
 librashader_build() {
   echo "[librashader] building"
   cd librashader
-  export RUSTFLAGS=-g
-  cargo run -p librashader-build-script -- --profile ${librashader_profile} --target x86_64-apple-darwin
-  cargo run -p librashader-build-script -- --profile ${librashader_profile} --target aarch64-apple-darwin
-  lipo -create -output target/${librashader_profile}/librashader.dylib target/x86_64-apple-darwin/${librashader_profile}/librashader.dylib target/aarch64-apple-darwin/${librashader_profile}/librashader.dylib
-  # Package debug symbols
-  mkdir -p target/${librashader_profile}/librashader.dylib.dSYM
-  mkdir -p target/${librashader_profile}/librashader.dylib.dSYM/Contents/Resources/DWARF
-  ditto target/*-apple-darwin/${librashader_profile}/deps/liblibrashader_capi.dylib.dSYM/Contents/Resources/Relocations target/${librashader_profile}/librashader.dylib.dSYM/Contents/Resources/Relocations
-  ditto target/aarch64-apple-darwin/${librashader_profile}/deps/liblibrashader_capi.dylib.dSYM/Contents/Info.plist target/${librashader_profile}/librashader.dylib.dSYM/Contents/Info.plist
-  lipo -create -output target/${librashader_profile}/librashader.dylib.dSYM/Contents/Resources/DWARF/liblibrashader_capi.dylib target/x86_64-apple-darwin/${librashader_profile}/deps/liblibrashader_capi.dylib.dSYM/Contents/Resources/DWARF/liblibrashader_capi.dylib target/aarch64-apple-darwin/${librashader_profile}/deps/liblibrashader_capi.dylib.dSYM/Contents/Resources/DWARF/liblibrashader_capi.dylib
+  cargo build --release -p librashader-capi --features=stable --target x86_64-apple-darwin
+  cargo build --release -p librashader-capi --features=stable --target aarch64-apple-darwin
+  lipo -create -output target/release/librashader.dylib \
+    target/x86_64-apple-darwin/release/liblibrashader_capi.dylib \
+    target/aarch64-apple-darwin/release/liblibrashader_capi.dylib
   cd ..
   echo "[librashader] building -- success"
 }
@@ -63,8 +34,7 @@ librashader_build() {
 librashader_install() {
   echo "[librashader] installing"
   ditto build_temp/librashader/include ares-deps/include/librashader/
-  ditto build_temp/librashader/target/${librashader_profile}/librashader.dylib ares-deps/lib/librashader.dylib
-  ditto build_temp/librashader/target/${librashader_profile}/librashader.dylib.dSYM ares-deps/lib/librashader.dylib.dSYM
+  ditto build_temp/librashader/target/release/librashader.dylib ares-deps/lib/librashader.dylib
   fix_rpaths ares-deps/lib/librashader.dylib
   ditto build_temp/librashader/LICENSE.md ares-deps/licenses/librashader/LICENSE.md
   ditto build_temp/librashader/LICENSE-GPL.md ares-deps/licenses/librashader/LICENSE-GPL.md

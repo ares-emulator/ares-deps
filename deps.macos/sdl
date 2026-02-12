@@ -1,30 +1,21 @@
 sdl_name='SDL3'
 sdl_version='3.4.0'
-sdl_url='https://github.com/libsdl-org/SDL.git'
-sdl_hash='a962f40bbba175e9716557a25d5d7965f134a3d3'
-SDLARGS=()
 
-## Build Steps
 sdl_setup() {
-  echo "[SDL3] cloning"
-  if [ ! -d "SDL" ]; then
-    git clone ${sdl_url}
-  else
-    git -C SDL fetch
-  fi
-  git -C SDL reset --hard "$sdl_hash"
-  export MACOSX_DEPLOYMENT_TARGET=10.15
-  echo "[SDL3] cloning -- success"
+  echo "[SDL3] downloading pre-built package"
+  curl -sL -o SDL3.dmg "https://github.com/libsdl-org/SDL/releases/download/release-${sdl_version}/SDL3-${sdl_version}.dmg"
+  local mount_point=$(hdiutil attach SDL3.dmg -noverify -nobrowse | grep "/Volumes/" | sed 's|.*\(/Volumes/.*\)|\1|')
+  echo "SDL3 DMG mounted at: ${mount_point}"
+  mkdir -p SDL
+  ditto "${mount_point}/SDL3.xcframework/macos-arm64_x86_64/SDL3.framework" SDL/SDL3.framework
+  ditto "${mount_point}/LICENSE.txt" SDL/LICENSE.txt
+  hdiutil detach "${mount_point}"
+  rm SDL3.dmg
+  echo "[SDL3] downloading -- success"
 }
 
 sdl_package_source() {
-  echo "[SDL3] packaging source"
-  ditto SDL ../ares-deps-source/src/SDL
-  echo "[SDL3] packaging source -- success"
-}
-
-sdl_clean() {
-  echo "[SDL3] cleaning up -- skipped"
+  echo "[SDL3] packaging source -- skipped (pre-built)"
 }
 
 sdl_patch() {
@@ -32,33 +23,12 @@ sdl_patch() {
 }
 
 sdl_build() {
-  echo "[SDL3] building"
-  SDLARGS=()
-  SDLARGS+=("-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64;")
-  
-  cd SDL
-  
-  xcodebuild build -project ./Xcode/SDL/SDL.xcodeproj \
-                   -scheme "SDL3" \
-                   archive \
-                   -configuration $config \
-                   DEBUG_INFORMATION_FORMAT="dwarf-with-dsym" \
-                   -archivePath "$SCRIPT_DIR/build_temp/SDL/build" \
-                   ARCHS="x86_64 arm64" \
-                   ONLY_ACTIVE_ARCH=FALSE \
-                   2>&1 | xcbeautify --renderer github-actions
-
-  cd ..
-  echo "[SDL3] building -- success"
+  echo "[SDL3] building -- skipped (pre-built)"
 }
 
 sdl_install() {
   echo "[SDL3] installing"
-  ditto build_temp/SDL/build.xcarchive/Products/Library/Frameworks/SDL3.framework ares-deps/lib/SDL3.framework
-  ditto build_temp/SDL/build.xcarchive/dSYMs/SDL3.framework.dSYM ares-deps/lib/SDL3.framework.dSYM
+  ditto build_temp/SDL/SDL3.framework ares-deps/lib/SDL3.framework
   ditto build_temp/SDL/LICENSE.txt ares-deps/licenses/SDL/LICENSE.txt
   echo "[SDL3] installing -- success"
 }
-
-
-
