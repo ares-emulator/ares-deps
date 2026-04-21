@@ -1,7 +1,7 @@
 librashader_name='librashader'
-librashader_version='0.9.1'
+librashader_version='0.10.1'
 librashader_url='https://github.com/SnowflakePowered/librashader.git'
-librashader_hash='ad661b661c3d10cb4a2573a78a41857330d499ca'
+librashader_hash='a910bee8d2ead0acf2f83b3e5ad0b8f8f66b53db'
 librashader_profile='release'
 
 librashader_setup() {
@@ -51,9 +51,9 @@ librashader_build() {
   export CFLAGS='-MT'
   if [[ $envName = windows-arm64 ]]; then
     echo "Targeting aarch64..."
-    cargo run -p librashader-build-script -- --profile ${librashader_profile} --target aarch64-pc-windows-msvc -- --no-default-features --features=runtime-opengl
+    cargo run -p librashader-build-script -- --profile ${librashader_profile} --target aarch64-pc-windows-msvc -- --no-default-features --features=runtime-opengl,runtime-d3d11,runtime-d3d12
   else
-    cargo run -p librashader-build-script -- --profile ${librashader_profile} -- --no-default-features --features=runtime-opengl
+    cargo run -p librashader-build-script -- --profile ${librashader_profile} -- --no-default-features --features=runtime-opengl,runtime-d3d11,runtime-d3d12
   fi
   unset RUSTFLAGS CXXFLAGS CFLAGS
   cd ..
