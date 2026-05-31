@@ -35,9 +35,9 @@ librashader_clean() {
 librashader_patch() {
   echo "[librashader] patching source"
   cd librashader
-  echo "Pinning nightly Rust version to 2025-05-20"
+  echo "Pinning Rust version to stable branch"
   echo $'[toolchain]' > rust-toolchain.toml
-  echo $'channel = \"nightly-2026-05-29\"' >> rust-toolchain.toml
+  echo $'channel = \"stable\"' >> rust-toolchain.toml
   echo $'targets = [ \"aarch64-pc-windows-msvc\", \"x86_64-pc-windows-msvc\" ]' >> rust-toolchain.toml
   cd ..
   echo "[librashader] patching source -- success"
